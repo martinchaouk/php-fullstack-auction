@@ -6,26 +6,39 @@
 ## My part
 
 - **Watchlist** – watchlist page with add/remove, showing each watched item's
-  current price (`controllers/auction/watchlist*.php`, `app/services/WatchlistService.php`)
+  current price. A composite primary key on `(user_id, auction_id)` stops anyone
+  watching the same auction twice
+  ([WatchlistController.php](app/http/controllers/WatchlistController.php),
+  [WatchlistService.php](app/services/WatchlistService.php),
+  [watchlist.view.php](views/watchlist.view.php),
+  [schema.sql L93–100](db/schema.sql#L93-L100))
 - **Seller ratings** – the winning buyer can rate the seller 1–5 with a comment
   once an auction sells. The seller's average rating shows on their profile. A
-  unique constraint allows only one rating per auction (`db/schema.sql`, line 135),
-  backed by server-side checks that the auction has a winner and that the rater
-  is that winner (`app/services/RatingService.php`, `controllers/auction/rate.php`)
+  unique constraint allows only one rating per auction
+  ([schema.sql L104](db/schema.sql#L104)), backed by server-side checks that the
+  auction has a winner and that the rater is that winner
+  ([RatingService.php](app/services/RatingService.php),
+  [RatingController.php](app/http/controllers/RatingController.php),
+  [rate.view.php](views/rate.view.php))
 - **Bid dashboard** – a "My Bids" page that splits active and past auctions. It
   shows time remaining, a Winning/Outbid or Won/Lost badge, your max bid next to
   the full bid history, and a "Rate seller" button after you win
-  (`views/my-bids.view.php`, `views/partials/bids-table.php`)
+  ([my-bids.view.php](views/my-bids.view.php),
+  [bids-table.php](views/partials/bids-table.php))
 - **Account pages** – a profile page that shows different content for your own
   account and for other users. You can change your username and password (with
   password validation). Visitors see only the seller's active auctions and
-  average rating (`views/account.view.php`, `controllers/account.php`)
-- Made auction status the single source of truth for whether an auction sold.
-  The code used to check a separate `Sold` status that drifted out of sync with
-  the auction lifecycle. Now "sold" means `Finished` plus a `winning_bid_id`.
-  I also fixed two bugs that stopped a sale from being recorded: the item's
-  `is_sold` update used the wrong column, and a reversed check rolled back
-  successful sales (`app/services/BidService.php`, `app/repositories/AuctionRepository.php`)
+  average rating
+  ([account.view.php](views/account.view.php),
+  [AccountController.php](app/http/controllers/AccountController.php))
+- **Sale status fix** – made auction status the single source of truth for
+  whether an auction sold. The code used to check a separate `Sold` status that
+  drifted out of sync with the auction lifecycle. Now "sold" means `Finished`
+  plus a `winning_bid_id`. I also fixed two bugs that stopped a sale from being
+  recorded: the item's `is_sold` update used the wrong column, and a reversed
+  check rolled back successful sales
+  ([BidService.php](app/services/BidService.php),
+  [AuctionRepository.php](app/repositories/AuctionRepository.php))
 
 
 A comprehensive online auction platform built using a custom framework. This application enables users to create, browse, bid on, and manage auctions with features including user authentication, role-based access control, real-time notifications, and collaborative filtering recommendations.
